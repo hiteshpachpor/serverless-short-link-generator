@@ -1,0 +1,13 @@
+Resources:
+  ShortUrlsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ${self:custom.tableName}
+      AttributeDefinitions:
+        - AttributeName: shortPath
+          AttributeType: S
+      KeySchema:
+        - AttributeName: shortPath
+          KeyType: HASH
+      # Set the capacity to auto-scale
+      BillingMode: PAY_PER_REQUEST

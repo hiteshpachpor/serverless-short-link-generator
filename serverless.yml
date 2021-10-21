@@ -1,0 +1,53 @@
+org: hiteshpachpor
+app: short-link
+service: short-link
+
+frameworkVersion: '2'
+
+custom:
+  # Our stage is based on what is passed in when running serverless
+  # commands. Or fallsback to what we have set in the provider section.
+  stage: ${opt:stage, self:provider.stage}
+  # Set the table name here so we can use it while testing locally
+  tableName: ${self:custom.stage}-short-links
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  lambdaHashingVersion: '20201221'
+  environment:
+    tableName: ${self:custom.stage}-short-links
+    domainName: hc.me
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+      Resource: "*"
+
+functions:
+  api:
+    handler: handler.handler
+    events:
+      - http:
+          path: /
+          method: GET
+      - http:
+          path: /404
+          method: GET
+      - http:
+          path: /create
+          method: POST
+      - http:
+          path: /{shortPath}
+          method: GET
+
+# Create our resources with separate CloudFormation templates
+resources:
+  # DynamoDB
+  - ${file(resources/dynamodb-table.yml)}
+
+plugins:
+  - serverless-offline
